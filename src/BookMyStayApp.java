@@ -1,45 +1,85 @@
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-// Actor: RoomInventory
+// Domain Model: Room
+class Room {
+    private String type;
+    private double price;
+    private String amenities;
+
+    public Room(String type, double price, String amenities) {
+        this.type = type;
+        this.price = price;
+        this.amenities = amenities;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public String getAmenities() {
+        return amenities;
+    }
+}
+
+// Actor: RoomInventory (same as Use Case 3)
 class RoomInventory {
 
     private HashMap<String, Integer> inventory;
 
-    // Constructor
     public RoomInventory() {
         inventory = new HashMap<>();
     }
 
-    // Add room types
     public void addRoomType(String roomType, int count) {
         inventory.put(roomType, count);
     }
 
-    // Get availability
     public int getAvailability(String roomType) {
         return inventory.getOrDefault(roomType, 0);
     }
 
-    // Update availability
-    public void updateAvailability(String roomType, int newCount) {
-        if (inventory.containsKey(roomType)) {
-            inventory.put(roomType, newCount);
-        } else {
-            System.out.println("Room type not found: " + roomType);
-        }
+    public Set<String> getAllRoomTypes() {
+        return inventory.keySet();
+    }
+}
+
+// Actor: Search Service (Read-only access)
+class RoomSearchService {
+
+    private RoomInventory inventory;
+    private HashMap<String, Room> roomDetails;
+
+    public RoomSearchService(RoomInventory inventory, HashMap<String, Room> roomDetails) {
+        this.inventory = inventory;
+        this.roomDetails = roomDetails;
     }
 
-    // Display inventory
-    public void displayInventory() {
-        System.out.println("\n--- Current Room Inventory ---");
-        for (Map.Entry<String, Integer> entry : inventory.entrySet()) {
-            System.out.println(entry.getKey() + " : " + entry.getValue());
+    // Search available rooms (READ-ONLY)
+    public void searchAvailableRooms() {
+        System.out.println("\n--- Available Rooms ---");
+
+        for (String type : inventory.getAllRoomTypes()) {
+
+            int available = inventory.getAvailability(type);
+
+            // Filter unavailable rooms
+            if (available > 0 && roomDetails.containsKey(type)) {
+                Room room = roomDetails.get(type);
+
+                System.out.println("Type: " + room.getType());
+                System.out.println("Price: ₹" + room.getPrice());
+                System.out.println("Amenities: " + room.getAmenities());
+                System.out.println("Available: " + available);
+                System.out.println("------------------------");
+            }
         }
     }
 }
 
-// Main Class
 public class BookMyStayApp {
 
     public static void main(String[] args) {
@@ -49,19 +89,19 @@ public class BookMyStayApp {
 
         // Register room types
         inventory.addRoomType("Single", 10);
-        inventory.addRoomType("Double", 5);
+        inventory.addRoomType("Double", 0); // unavailable
         inventory.addRoomType("Suite", 2);
 
-        // Display initial inventory
-        inventory.displayInventory();
+        // Room details (Domain Model)
+        HashMap<String, Room> roomDetails = new HashMap<>();
+        roomDetails.put("Single", new Room("Single", 2000, "WiFi, AC"));
+        roomDetails.put("Double", new Room("Double", 3500, "WiFi, AC, TV"));
+        roomDetails.put("Suite", new Room("Suite", 6000, "WiFi, AC, TV, Mini Bar"));
 
-        // Check availability
-        System.out.println("\nAvailable Single Rooms: " + inventory.getAvailability("Single"));
+        // Search Service
+        RoomSearchService searchService = new RoomSearchService(inventory, roomDetails);
 
-        // Update availability (simulate booking)
-        inventory.updateAvailability("Single", 8);
-
-        // Display updated inventory
-        inventory.displayInventory();
+        // Guest performs search
+        searchService.searchAvailableRooms();
     }
 }

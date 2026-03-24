@@ -26,10 +26,9 @@ class Reservation {
     }
 }
 
-// Booking History (stores confirmed bookings)
+// Booking History (stores reservations in order)
 class BookingHistory {
 
-    // List to maintain insertion order
     private List<Reservation> history;
 
     public BookingHistory() {
@@ -37,31 +36,31 @@ class BookingHistory {
     }
 
     // Add confirmed reservation
-    public void addReservation(Reservation r) {
-        history.add(r);
-        System.out.println("Reservation stored: " + r.getReservationId());
+    public void addReservation(Reservation reservation) {
+        history.add(reservation);
+        System.out.println("Stored Reservation: " + reservation.getReservationId());
     }
 
-    // Get all reservations
-    public List<Reservation> getAllReservations() {
+    // Retrieve all reservations
+    public List<Reservation> getReservations() {
         return history;
     }
 }
 
-// Booking Report Service (read-only reporting)
+// Booking Report Service (read-only)
 class BookingReportService {
 
-    private BookingHistory history;
+    private BookingHistory bookingHistory;
 
-    public BookingReportService(BookingHistory history) {
-        this.history = history;
+    public BookingReportService(BookingHistory bookingHistory) {
+        this.bookingHistory = bookingHistory;
     }
 
-    // Display all bookings
-    public void displayAllBookings() {
+    // Display booking history
+    public void displayBookingHistory() {
         System.out.println("\n--- Booking History ---");
 
-        for (Reservation r : history.getAllReservations()) {
+        for (Reservation r : bookingHistory.getReservations()) {
             System.out.println("ID: " + r.getReservationId()
                     + " | Guest: " + r.getGuestName()
                     + " | Room: " + r.getRoomType());
@@ -69,21 +68,21 @@ class BookingReportService {
     }
 
     // Generate summary report
-    public void generateSummary() {
-        System.out.println("\n--- Booking Summary Report ---");
+    public void generateSummaryReport() {
+        System.out.println("\n--- Summary Report ---");
 
-        Map<String, Integer> roomCount = new HashMap<>();
+        Map<String, Integer> countMap = new HashMap<>();
 
-        for (Reservation r : history.getAllReservations()) {
-            roomCount.put(r.getRoomType(),
-                    roomCount.getOrDefault(r.getRoomType(), 0) + 1);
+        for (Reservation r : bookingHistory.getReservations()) {
+            countMap.put(r.getRoomType(),
+                    countMap.getOrDefault(r.getRoomType(), 0) + 1);
         }
 
-        for (String type : roomCount.keySet()) {
-            System.out.println(type + " Rooms Booked: " + roomCount.get(type));
+        for (String type : countMap.keySet()) {
+            System.out.println(type + " Rooms Booked: " + countMap.get(type));
         }
 
-        System.out.println("Total Bookings: " + history.getAllReservations().size());
+        System.out.println("Total Reservations: " + bookingHistory.getReservations().size());
     }
 }
 public class BookMyStayApp {
@@ -92,18 +91,19 @@ public class BookMyStayApp {
 
         BookingHistory history = new BookingHistory();
 
-        // Simulate confirmed bookings (from Use Case 6)
+        // Simulate confirmed bookings
         history.addReservation(new Reservation("RES101", "Alice", "Single"));
         history.addReservation(new Reservation("RES102", "Bob", "Double"));
-        history.addReservation(new Reservation("RES103", "Charlie", "Single"));
+        history.addReservation(new Reservation("RES103", "Charlie", "Suite"));
+        history.addReservation(new Reservation("RES104", "David", "Single"));
 
         // Reporting service
         BookingReportService reportService = new BookingReportService(history);
 
-        // Admin views booking history
-        reportService.displayAllBookings();
+        // Admin views history
+        reportService.displayBookingHistory();
 
-        // Admin generates summary report
-        reportService.generateSummary();
+        // Admin generates report
+        reportService.generateSummaryReport();
     }
 }
